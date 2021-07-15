@@ -1,9 +1,10 @@
 import argparse
 import datetime
+import io
 import json
 import shutil
-import urllib
 import urllib.request
+import tarfile
 import zipfile
 
 import requests
@@ -64,21 +65,46 @@ def install(repo: str):
         # remove the directory
         shutil.rmtree(fontman_dir / dirname)
 
-    # pick the OTF source
-    asset = None
-    for asset in res_json["assets"]:
-        if asset["name"].lower().startswith("otf"):
-            break
-    assert asset is not None
+    assets = res_json["assets"]
 
-    assert asset["content_type"] == "application/zip"
-    # res = requests.get(asset["browser_download_url"])
-    url = asset["browser_download_url"]
-    filehandle, _ = urllib.request.urlretrieve(url)
-    zip_file_object = zipfile.ZipFile(filehandle, "r")
+    if len(assets) == 0:
+        raise RuntimeError("Release without assets")
+    elif len(assets) == 1:
+        asset = assets[0]
+    else:
+        # If there are multiple assets, choose one. First, create a rating.
+        ratings = [0] * len(assets)
+        for k, item in enumerate(assets):
+            if "otf" in item["name"].lower():
+                ratings[k] += 2
+            elif "ttf" in item["name"].lower():
+                ratings[k] += 1
+
+        max_rating_assets = [
+            asset for asset, rating in zip(assets, ratings) if rating == max(ratings)
+        ]
+        # pick the one with the smallest size
+        asset = min(max_rating_assets, key=lambda item: item["size"])
+
     if (fontman_dir / dirname).exists():
         shutil.rmtree(fontman_dir / dirname)
-    zip_file_object.extractall(fontman_dir / dirname)
+
+    url = asset["browser_download_url"]
+    res = requests.get(url, stream=True)
+    if not res.ok:
+        raise RuntimeError(f"Failed to fetch resource from {url}")
+
+    if asset["content_type"] in ["application/zip", "application/x-zip-compressed"]:
+        with zipfile.ZipFile(io.BytesIO(res.content), "r") as z:
+            z.extractall(fontman_dir / dirname)
+    elif asset["content_type"] == "application/x-gzip":
+        with tarfile.open(fileobj=res.raw, mode="r|gz") as f:
+            f.extractall(fontman_dir / dirname)
+    elif asset["content_type"] == "application/x-xz":
+        with tarfile.open(fileobj=res.raw, mode="r|xz") as f:
+            f.extractall(fontman_dir / dirname)
+    else:
+        raise RuntimeError(f"Unknown content type {asset['content_type']}")
 
     # adde database file
     db = {

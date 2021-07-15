@@ -35,7 +35,7 @@ def remove(repo: str):
 
     directory = fontman_dir / dirname
     if not directory.exists():
-        raise RuntimeError("Could not find font at {directory}")
+        raise RuntimeError(f"Could not find font at {directory}")
 
     shutil.rmtree(directory)
 
