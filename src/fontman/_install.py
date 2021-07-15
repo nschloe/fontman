@@ -44,7 +44,7 @@ def install(repo: str):
 
     res = requests.get(url)
     if not res.ok:
-        raise RuntimeError(f"Failed request to {url}")
+        raise RuntimeError(f"Failed request to {url} ({res.status_code})")
 
     res_json = res.json()
     assert not res_json["prerelease"]
