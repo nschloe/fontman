@@ -3,7 +3,6 @@ import datetime
 import io
 import json
 import shutil
-import urllib.request
 import tarfile
 import zipfile
 
@@ -86,27 +85,28 @@ def install(repo: str):
         # pick the one with the smallest size
         asset = min(max_rating_assets, key=lambda item: item["size"])
 
-    if (fontman_dir / dirname).exists():
-        shutil.rmtree(fontman_dir / dirname)
-
     url = asset["browser_download_url"]
     res = requests.get(url, stream=True)
     if not res.ok:
         raise RuntimeError(f"Failed to fetch resource from {url}")
 
+    target_dir = fontman_dir / dirname
+    if target_dir.exists():
+        shutil.rmtree(target_dir)
+
     if asset["content_type"] in ["application/zip", "application/x-zip-compressed"]:
         with zipfile.ZipFile(io.BytesIO(res.content), "r") as z:
-            z.extractall(fontman_dir / dirname)
+            z.extractall(target_dir)
     elif asset["content_type"] == "application/x-gzip":
         with tarfile.open(fileobj=res.raw, mode="r|gz") as f:
-            f.extractall(fontman_dir / dirname)
+            f.extractall(target_dir)
     elif asset["content_type"] == "application/x-xz":
         with tarfile.open(fileobj=res.raw, mode="r|xz") as f:
-            f.extractall(fontman_dir / dirname)
+            f.extractall(target_dir)
     else:
         raise RuntimeError(f"Unknown content type {asset['content_type']}")
 
-    # adde database file
+    # add database file
     db = {
         "last-updated": datetime.datetime.now().isoformat(),
         "tag": res_json["tag_name"],
