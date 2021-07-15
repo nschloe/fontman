@@ -108,6 +108,7 @@ def install(repo: str):
 
     # add database file
     db = {
+        "repo": repo,
         "last-updated": datetime.datetime.now().isoformat(),
         "tag": res_json["tag_name"],
     }
