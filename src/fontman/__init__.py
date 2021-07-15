@@ -1,6 +1,3 @@
-from .cli import install, update
+from .cli import _install, _update
 
-__all__ = [
-    "install",
-    "update",
-]
+__all__ = ["_install", "_update"]

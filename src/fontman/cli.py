@@ -1,32 +1,45 @@
+import argparse
 import sys
+from importlib import metadata
 
-from .__about__ import __version__
+from .main import install
 
 
-def show(argv=None):
-    # Parse command line arguments.
-    parser = _get_parser()
-    args = parser.parse_args(argv)
-
-    print(args.number)
+def _update(argv=None):
     return
 
 
-def _get_parser():
-    import argparse
+def _install(argv=None):
+    # Parse command line arguments.
+    parser = _get_parser()
+    args = parser.parse_args(argv)
+    print(args)
+    for repo in args.repo:
+        install(repo)
 
+
+def get_version():
+    try:
+        return metadata.version("fontman")
+    except Exception:
+        return "unknown"
+
+
+def _get_parser():
     parser = argparse.ArgumentParser(
-        description=("Dummy pyfoobar executable."),
+        description=("Dummy fontman executable."),
         formatter_class=argparse.RawTextHelpFormatter,
     )
 
-    parser.add_argument("number", type=int, help="number to show")
+    parser.add_argument(
+        "repo", nargs="+", type=str, help="GitHub repository to install"
+    )
 
-    __copyright__ = "Copyright (c) 2019-2020 Nico Schlömer <nico.schloemer@gmail.com>"
+    __copyright__ = "Copyright (c) 2021 Nico Schlömer <nico.schloemer@gmail.com>"
     version_text = "\n".join(
         [
-            "pyfoobar {} [Python {}.{}.{}]".format(
-                __version__,
+            "fontman {} [Python {}.{}.{}]".format(
+                get_version(),
                 sys.version_info.major,
                 sys.version_info.minor,
                 sys.version_info.micro,
