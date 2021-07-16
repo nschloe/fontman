@@ -2,6 +2,8 @@ import pathlib
 import sys
 from importlib import metadata
 
+import appdirs
+
 
 def get_version_text(prog):
     try:
@@ -22,6 +24,6 @@ def get_version_text(prog):
 
 
 def get_dir():
-    fontman_dir = pathlib.Path("/tmp/fontman/")
+    fontman_dir = pathlib.Path(appdirs.user_data_dir()) / "fonts" / "fontman"
     fontman_dir.mkdir(parents=True, exist_ok=True)
     return fontman_dir

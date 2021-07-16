@@ -22,14 +22,12 @@ def _cli_list(argv=None):
         help="display version information",
     )
 
-    list_fonts()
+    return list_fonts()
 
 
 def list_fonts():
     fontman_dir = get_dir()
 
-    console = Console()
-    console.print("Installed fonts:")
     table = Table(show_header=False)
     table.box = box.SIMPLE
 
@@ -47,4 +45,11 @@ def list_fonts():
 
         table.add_row(d["repo"], d["tag"])
 
-    console.print(table)
+    if table.row_count == 0:
+        print(f"Found no fontman-installed fonts in {fontman_dir}")
+    else:
+        console = Console()
+        console.print("Installed fonts:")
+        console.print(table)
+
+    return 0
