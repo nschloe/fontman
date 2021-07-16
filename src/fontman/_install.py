@@ -5,6 +5,7 @@ import json
 import shutil
 import tarfile
 import zipfile
+from typing import Optional
 
 import requests
 from rich.console import Console
@@ -42,10 +43,10 @@ def _cli_install(argv=None):
     token = args.token_file.readline().strip() if args.token_file else None
 
     for repo in args.repo:
-        install(repo)
+        install(repo, token)
 
 
-def install(repo: str):
+def install(repo: str, token: Optional[str] = None):
     dirname = repo.replace("/", "_").lower()
     target_dir = get_dir() / dirname
 
@@ -63,7 +64,7 @@ def install(repo: str):
         )
         return
 
-    tag, assets = _fetch_info_rest(repo)
+    tag, assets = _fetch_info_rest(repo, token)
     _download_and_install(target_dir, repo, assets, tag)
     console.print(f"Successfully installed [bold]{repo} {tag}[/]")
 

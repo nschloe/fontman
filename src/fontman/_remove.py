@@ -4,6 +4,7 @@ import shutil
 from typing import List
 
 from rich.console import Console
+
 from .tools import get_dir, get_version_text
 
 

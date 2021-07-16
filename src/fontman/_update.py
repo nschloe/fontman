@@ -5,8 +5,8 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from .tools import get_dir, get_version_text
 from ._install import _download_and_install, _fetch_info_rest
+from .tools import get_dir, get_version_text
 
 
 def _cli_update(argv=None):

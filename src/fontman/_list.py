@@ -1,11 +1,11 @@
 import argparse
 import json
 
-from .tools import get_dir, get_version_text
-
 from rich import box
 from rich.console import Console
 from rich.table import Table
+
+from .tools import get_dir, get_version_text
 
 
 def _cli_list(argv=None):
