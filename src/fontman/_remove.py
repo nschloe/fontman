@@ -1,5 +1,7 @@
 import argparse
+import json
 import shutil
+from typing import List
 
 from rich.console import Console
 from .tools import get_dir, get_version_text
@@ -12,7 +14,7 @@ def _cli_remove(argv=None):
     )
 
     parser.add_argument(
-        "repo", nargs="+", type=str, help="GitHub repository fonts to remove"
+        "name", nargs="+", type=str, help="GitHub repository fonts to remove"
     )
 
     parser.add_argument(
@@ -24,21 +26,45 @@ def _cli_remove(argv=None):
     )
 
     args = parser.parse_args(argv)
-
-    for repo in args.repo:
-        remove(repo)
+    return remove(args.name)
 
 
-def remove(repo: str):
+def remove(names: List[str]):
     fontman_dir = get_dir()
 
-    dirname = repo.replace("/", "-").lower()
-
-    directory = fontman_dir / dirname
-    if not directory.exists():
-        raise RuntimeError(f"Could not find font at {directory}")
-
-    shutil.rmtree(directory)
+    scheduled_dirs = []
+    for directory in fontman_dir.glob("*"):
+        if not ((directory / "fontman.json").exists()):
+            continue
+        for name in names:
+            if name.lower() in directory.name.lower():
+                scheduled_dirs.append(directory)
+                break
 
     console = Console()
-    console.print(f"Successfully removed {repo}")
+
+    if len(scheduled_dirs) == 0:
+        console.print("Found no fonts to remove.", style="yellow")
+        return 1
+
+    repos = []
+    for directory in sorted(scheduled_dirs):
+        with open(directory / "fontman.json") as f:
+            d = json.load(f)
+        repos.append(d["repo"])
+
+    console.print("The following fonts are scheduled for removal:\n")
+    for repo in repos:
+        console.print(f"  {repo}")
+
+    console.print("\nRemove? \\[y/N] ", end="")
+    choice = input().lower()
+    if choice not in ["y", "yes"]:
+        console.print("Abort.")
+        return 1
+
+    for repo, directory in zip(repos, scheduled_dirs):
+        shutil.rmtree(directory)
+        console.print(f"Successfully removed {repo}")
+
+    return 0

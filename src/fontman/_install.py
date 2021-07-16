@@ -46,7 +46,7 @@ def _cli_install(argv=None):
 
 
 def install(repo: str):
-    dirname = repo.replace("/", "-").lower()
+    dirname = repo.replace("/", "_").lower()
     target_dir = get_dir() / dirname
 
     console = Console()
