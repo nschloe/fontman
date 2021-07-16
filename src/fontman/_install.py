@@ -23,6 +23,13 @@ def _cli_install(argv=None):
     )
 
     parser.add_argument(
+        "-t",
+        "--token-file",
+        type=argparse.FileType("r"),
+        help="File containing a GitHub token (can be - [stdin])",
+    )
+
+    parser.add_argument(
         "--version",
         "-v",
         action="version",
@@ -31,6 +38,8 @@ def _cli_install(argv=None):
     )
 
     args = parser.parse_args(argv)
+
+    token = args.token_file.readline().strip() if args.token_file else None
 
     for repo in args.repo:
         install(repo)
@@ -54,7 +63,7 @@ def install(repo: str):
         )
         return
 
-    tag, assets = _fetch_info(repo)
+    tag, assets = _fetch_info_rest(repo)
     _download_and_install(target_dir, repo, assets, tag)
     console.print(f"Successfully installed [bold]{repo} {tag}[/]")
 
@@ -109,11 +118,16 @@ def _download_and_install(target_dir, repo, assets, tag_name):
         json.dump(db, f, indent=2)
 
 
-def _fetch_info(repo):
+def _fetch_info_rest(repo, token=None):
     # The latest release is the most recent non-prerelease, non-draft release, sorted by
     # the created_at attribute.
     url = f"https://api.github.com/repos/{repo}/releases/latest"
-    res = requests.get(url)
+
+    headers = {}
+    if token is not None:
+        headers["Authorization"] = f"token {token}"
+
+    res = requests.get(url, headers=headers)
     if not res.ok:
         raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")
 
@@ -122,3 +136,28 @@ def _fetch_info(repo):
     assert not res_json["draft"]
 
     return res_json["tag_name"], res_json["assets"]
+
+
+# def _fetch_info_graphql(repo):
+#     url = "https://api.github.com/graphql"
+#
+#     # headers = {"Authorization": "token TOKEN"}
+#
+#     owner, name = repo.split("/")
+#
+#     query = f"""
+#     {{
+#       repository(owner: "{owner}", name: "{name}") {{
+#         latestRelease
+#     }}
+#     """
+#     res = requests.post(url,json={"query": query})
+#
+#     if not res.ok:
+#         raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")
+#
+#     print(res.json())
+#
+#     exit(1)
+#
+#     return res_json["tag_name"], res_json["assets"]

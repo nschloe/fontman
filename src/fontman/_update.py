@@ -6,13 +6,20 @@ from rich.console import Console
 from rich.table import Table
 
 from .tools import get_dir, get_version_text
-from ._install import _download_and_install, _fetch_info
+from ._install import _download_and_install, _fetch_info_rest
 
 
 def _cli_update(argv=None):
     parser = argparse.ArgumentParser(
         description=("Update fonts from GitHub."),
         formatter_class=argparse.RawTextHelpFormatter,
+    )
+
+    parser.add_argument(
+        "-t",
+        "--token-file",
+        type=argparse.FileType("r"),
+        help="File containing a GitHub token (can be - [stdin])",
     )
 
     parser.add_argument(
@@ -23,12 +30,14 @@ def _cli_update(argv=None):
         help="display version information",
     )
 
-    parser.parse_args(argv)
+    args = parser.parse_args(argv)
 
-    return update_all()
+    token = args.token_file.readline().strip() if args.token_file else None
+
+    return update_all(token)
 
 
-def update_all():
+def update_all(token):
     fontman_dir = get_dir()
 
     update_list = []
@@ -43,7 +52,7 @@ def update_all():
             d = json.load(f)
 
         old_tag = d["tag"]
-        new_tag, assets = _fetch_info(d["repo"])
+        new_tag, assets = _fetch_info_rest(d["repo"], token)
 
         if old_tag != new_tag:
             update_list.append((directory, d["repo"], old_tag, new_tag, assets))
@@ -65,7 +74,7 @@ def update_all():
         table.add_row(f"{repo}:", old_tag, "→", new_tag)
     console.print(table)
 
-    console.print(r"Update? \[Y/n] ", end="")
+    console.print("Update? [Y/n] ", end="")
     choice = input().lower()
     if choice in ["n", "no"]:
         console.print("Abort.")
