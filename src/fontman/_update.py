@@ -31,7 +31,7 @@ def update_all():
 
     update_list = []
 
-    for directory in fontman_dir.glob("*"):
+    for directory in sorted(fontman_dir.glob("*")):
         if not directory.is_dir():
             continue
         if not (directory / "fontman.json").exists():

@@ -36,13 +36,13 @@ def list_fonts():
     table.add_column("Name")
     table.add_column("Release")
 
-    for p in fontman_dir.glob("*"):
-        if not p.is_dir():
+    for directory in sorted(fontman_dir.glob("*")):
+        if not directory.is_dir():
             continue
-        if not (p / "fontman.json").exists():
+        if not (directory / "fontman.json").exists():
             continue
 
-        with open(p / "fontman.json") as f:
+        with open(directory / "fontman.json") as f:
             d = json.load(f)
 
         table.add_row(d["repo"], d["tag"])
