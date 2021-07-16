@@ -45,10 +45,10 @@ def list_fonts():
 
         table.add_row(d["repo"], d["tag"])
 
+    console = Console()
     if table.row_count == 0:
-        print(f"Found no fontman-installed fonts in {fontman_dir}")
+        console.print(f"Found no fontman-installed fonts in {fontman_dir}", style="red")
     else:
-        console = Console()
         console.print("Installed fonts:")
         console.print(table)
 
