@@ -45,19 +45,18 @@ def install(repo: str):
     db_file = target_dir / "fontman.json"
     if db_file.exists():
         console.print(f"{repo} is already installed", style="yellow")
-        return 0
+        return
 
     if target_dir.exists():
         console.print(
             "Target directory exists but does not contain fontman-installed font",
             style="red",
         )
-        return 1
+        return
 
     # The latest release is the most recent non-prerelease, non-draft release, sorted by
     # the created_at attribute.
     url = f"https://api.github.com/repos/{repo}/releases/latest"
-
     res = requests.get(url)
     if not res.ok:
         raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")

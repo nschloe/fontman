@@ -2,6 +2,9 @@ import argparse
 import json
 
 import requests
+from rich import box
+from rich.console import Console
+from rich.table import Table
 
 from .tools import get_dir, get_version_text
 from ._install import _download_and_install
@@ -23,7 +26,7 @@ def _cli_update(argv=None):
 
     parser.parse_args(argv)
 
-    update_all()
+    return update_all()
 
 
 def update_all():
@@ -46,7 +49,9 @@ def update_all():
 
         res = requests.get(url)
         if not res.ok:
-            raise RuntimeError(f"Failed request to {url} ({res.status_code})")
+            raise RuntimeError(
+                f"Failed request to {url} ({res.status_code}, {res.reason})"
+            )
 
         res_json = res.json()
         assert not res_json["prerelease"]
@@ -55,24 +60,32 @@ def update_all():
         if d["tag"] != res_json["tag_name"]:
             update_list.append((directory, repo, d["tag"], res_json))
 
+    console = Console()
+
     if len(update_list) == 0:
-        print("All installed fonts up-to-date.")
+        console.print("All installed fonts up-to-date.")
         return
 
-    print("Available updates:")
+    console.print("Available updates:")
+    table = Table(show_header=False)
+    table.box = box.SIMPLE
+    table.add_column("Name")
+    table.add_column("old")
+    table.add_column("arrow")
+    table.add_column("new")
     for _, repo, old_tag, res_json in update_list:
-        print()
-        print(f"  {repo}:")
-        print(f"  {old_tag}  →  {res_json['tag_name']}")
+        table.add_row(f"{repo}:", old_tag, "→", res_json["tag_name"])
+    console.print(table)
 
-    print()
-    print("Update? [y/N] ", end="")
+    console.print(r"Update? \[Y/n] ", end="")
     choice = input().lower()
-    if choice not in ["y", "yes"]:
-        print("Abort.")
+    if choice in ["n", "no"]:
+        console.print("Abort.")
         return 1
 
     for target_dir, repo, _, res_json in update_list:
         tag = res_json["tag_name"]
         _download_and_install(target_dir, repo, res_json["assets"], tag)
-        print(f"Successfully updated to {repo} {tag}")
+        console.print(f"Successfully updated to {repo} {tag}")
+
+    return 0
