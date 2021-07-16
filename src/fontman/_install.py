@@ -54,19 +54,8 @@ def install(repo: str):
         )
         return
 
-    # The latest release is the most recent non-prerelease, non-draft release, sorted by
-    # the created_at attribute.
-    url = f"https://api.github.com/repos/{repo}/releases/latest"
-    res = requests.get(url)
-    if not res.ok:
-        raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")
-
-    res_json = res.json()
-    assert not res_json["prerelease"]
-    assert not res_json["draft"]
-
-    tag = res_json["tag_name"]
-    _download_and_install(target_dir, repo, res_json["assets"], tag)
+    tag, assets = _fetch_info(repo)
+    _download_and_install(target_dir, repo, assets, tag)
     console.print(f"Successfully installed [bold]{repo} {tag}[/]")
 
 
@@ -118,3 +107,18 @@ def _download_and_install(target_dir, repo, assets, tag_name):
     }
     with open(target_dir / "fontman.json", "w") as f:
         json.dump(db, f, indent=2)
+
+
+def _fetch_info(repo):
+    # The latest release is the most recent non-prerelease, non-draft release, sorted by
+    # the created_at attribute.
+    url = f"https://api.github.com/repos/{repo}/releases/latest"
+    res = requests.get(url)
+    if not res.ok:
+        raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")
+
+    res_json = res.json()
+    assert not res_json["prerelease"]
+    assert not res_json["draft"]
+
+    return res_json["tag_name"], res_json["assets"]

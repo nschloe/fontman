@@ -1,13 +1,12 @@
 import argparse
 import json
 
-import requests
 from rich import box
 from rich.console import Console
 from rich.table import Table
 
 from .tools import get_dir, get_version_text
-from ._install import _download_and_install
+from ._install import _download_and_install, _fetch_info
 
 
 def _cli_update(argv=None):
@@ -43,28 +42,17 @@ def update_all():
         with open(directory / "fontman.json") as f:
             d = json.load(f)
 
-        repo = d["repo"]
+        old_tag = d["tag"]
+        new_tag, assets = _fetch_info(d["repo"])
 
-        url = f"https://api.github.com/repos/{repo}/releases/latest"
-
-        res = requests.get(url)
-        if not res.ok:
-            raise RuntimeError(
-                f"Failed request to {url} ({res.status_code}, {res.reason})"
-            )
-
-        res_json = res.json()
-        assert not res_json["prerelease"]
-        assert not res_json["draft"]
-
-        if d["tag"] != res_json["tag_name"]:
-            update_list.append((directory, repo, d["tag"], res_json))
+        if old_tag != new_tag:
+            update_list.append((directory, d["repo"], old_tag, new_tag, assets))
 
     console = Console()
 
     if len(update_list) == 0:
         console.print("All installed fonts up-to-date.")
-        return
+        return 0
 
     console.print("Available updates:")
     table = Table(show_header=False)
@@ -73,8 +61,8 @@ def update_all():
     table.add_column("old")
     table.add_column("arrow")
     table.add_column("new")
-    for _, repo, old_tag, res_json in update_list:
-        table.add_row(f"{repo}:", old_tag, "→", res_json["tag_name"])
+    for _, repo, old_tag, new_tag, assets in update_list:
+        table.add_row(f"{repo}:", old_tag, "→", new_tag)
     console.print(table)
 
     console.print(r"Update? \[Y/n] ", end="")
@@ -83,9 +71,8 @@ def update_all():
         console.print("Abort.")
         return 1
 
-    for target_dir, repo, _, res_json in update_list:
-        tag = res_json["tag_name"]
-        _download_and_install(target_dir, repo, res_json["assets"], tag)
-        console.print(f"Successfully updated to {repo} {tag}")
+    for target_dir, repo, _, new_tag, assets in update_list:
+        _download_and_install(target_dir, repo, assets, new_tag)
+        console.print(f"Successfully updated to {repo} {new_tag}")
 
     return 0
