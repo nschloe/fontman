@@ -62,19 +62,12 @@ def install(repo: str):
         print("Target directory exists but does not contain fontman-installed font")
         return 1
 
-    assets = res_json["assets"]
+    tag = res_json["tag_name"]
+    _download_and_install(target_dir, repo, res_json["assets"], tag)
+    print(f"Successfully installed {tag} of {repo}")
 
-    # with open(db_file, "r") as f:
-    #     db = json.load(f)
 
-    # if db["tag"] == res_json["tag_name"]:
-    #     tag = res_json["tag_name"]
-    #     print(f"Already have latest release {tag} of {repo}")
-    #     return
-
-    # # remove the directory
-    # shutil.rmtree(fontman_dir / dirname)
-
+def _download_and_install(target_dir, repo, assets, tag_name):
     if len(assets) == 0:
         raise RuntimeError("Release without assets")
     elif len(assets) == 1:
@@ -118,11 +111,7 @@ def install(repo: str):
     db = {
         "repo": repo,
         "last-updated": datetime.datetime.now().isoformat(),
-        "tag": res_json["tag_name"],
+        "tag": tag_name,
     }
-
-    with open(db_file, "w") as f:
+    with open(target_dir / "fontman.json", "w") as f:
         json.dump(db, f, indent=2)
-
-    tag = res_json["tag_name"]
-    print(f"Successfully installed {tag} of {repo}")
