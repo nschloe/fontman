@@ -7,6 +7,7 @@ import tarfile
 import zipfile
 
 import requests
+from rich.console import Console
 
 from .tools import get_dir, get_version_text
 
@@ -36,35 +37,38 @@ def _cli_install(argv=None):
 
 
 def install(repo: str):
+    dirname = repo.replace("/", "-").lower()
+    target_dir = get_dir() / dirname
+
+    console = Console()
+
+    db_file = target_dir / "fontman.json"
+    if db_file.exists():
+        console.print(f"{repo} is already installed", style="yellow")
+        return 0
+
+    if target_dir.exists():
+        console.print(
+            "Target directory exists but does not contain fontman-installed font",
+            style="red",
+        )
+        return 1
+
     # The latest release is the most recent non-prerelease, non-draft release, sorted by
     # the created_at attribute.
     url = f"https://api.github.com/repos/{repo}/releases/latest"
 
-    dirname = repo.replace("/", "-").lower()
-
     res = requests.get(url)
     if not res.ok:
-        raise RuntimeError(f"Failed request to {url} ({res.status_code})")
+        raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")
 
     res_json = res.json()
     assert not res_json["prerelease"]
     assert not res_json["draft"]
 
-    fontman_dir = get_dir()
-    target_dir = fontman_dir / dirname
-
-    db_file = target_dir / "fontman.json"
-    if db_file.exists():
-        print(f"{repo} is already installed")
-        return 0
-
-    if target_dir.exists():
-        print("Target directory exists but does not contain fontman-installed font")
-        return 1
-
     tag = res_json["tag_name"]
     _download_and_install(target_dir, repo, res_json["assets"], tag)
-    print(f"Successfully installed {tag} of {repo}")
+    console.print(f"Successfully installed [bold]{repo} {tag}[/]")
 
 
 def _download_and_install(target_dir, repo, assets, tag_name):

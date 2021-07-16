@@ -47,9 +47,11 @@ def list_fonts():
 
     console = Console()
     if table.row_count == 0:
-        console.print(f"Found no fontman-installed fonts in {fontman_dir}", style="red")
+        console.print(
+            f"Found no fontman-installed fonts in {fontman_dir}", style="yellow"
+        )
     else:
-        console.print("Installed fonts:")
+        console.print(f"Installed fonts (in {fontman_dir}):")
         console.print(table)
 
     return 0

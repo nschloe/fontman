@@ -1,6 +1,7 @@
 import argparse
 import shutil
 
+from rich.console import Console
 from .tools import get_dir, get_version_text
 
 
@@ -39,4 +40,5 @@ def remove(repo: str):
 
     shutil.rmtree(directory)
 
-    print(f"Successfully removed {repo} font")
+    console = Console()
+    console.print(f"Successfully removed {repo}")
