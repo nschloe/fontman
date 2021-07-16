@@ -51,20 +51,29 @@ def install(repo: str):
     assert not res_json["draft"]
 
     fontman_dir = get_dir()
-    db_file = fontman_dir / dirname / "fontman.json"
+    target_dir = fontman_dir / dirname
+
+    db_file = target_dir / "fontman.json"
     if db_file.exists():
-        with open(db_file, "r") as f:
-            db = json.load(f)
+        print(f"{repo} is already installed")
+        return 0
 
-        if db["tag"] == res_json["tag_name"]:
-            tag = res_json["tag_name"]
-            print(f"Already have latest release {tag} of {repo}")
-            return
-
-        # remove the directory
-        shutil.rmtree(fontman_dir / dirname)
+    if target_dir.exists():
+        print("Target directory exists but does not contain fontman-installed font")
+        return 1
 
     assets = res_json["assets"]
+
+    # with open(db_file, "r") as f:
+    #     db = json.load(f)
+
+    # if db["tag"] == res_json["tag_name"]:
+    #     tag = res_json["tag_name"]
+    #     print(f"Already have latest release {tag} of {repo}")
+    #     return
+
+    # # remove the directory
+    # shutil.rmtree(fontman_dir / dirname)
 
     if len(assets) == 0:
         raise RuntimeError("Release without assets")
@@ -90,7 +99,6 @@ def install(repo: str):
     if not res.ok:
         raise RuntimeError(f"Failed to fetch resource from {url}")
 
-    target_dir = fontman_dir / dirname
     if target_dir.exists():
         shutil.rmtree(target_dir)
 
