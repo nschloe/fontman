@@ -88,6 +88,10 @@ def _download_and_install(target_dir, repo, assets, tag_name):
 
     _extract_selectively(archive, target_dir)
 
+    # Sometimes, the archives will contain stray __MACOSX files. Remove those
+    if (target_dir / "__MACOSX").exists():
+        shutil.rmtree(target_dir / "__MACOSX")
+
     # add database file
     db = {
         "repo": repo,
@@ -99,32 +103,20 @@ def _download_and_install(target_dir, repo, assets, tag_name):
 
 
 def _extract_selectively(archive, target_dir):
-    # get the top-level files/directories of the archive
-    top_level = {
-        item for item in archive.namelist() if item[-1] == "/" and item.count("/") == 1
-    }
+    # If there are OTF files, only install those
+    # Otherwise, if there are TTC files, only install those
+    # Otherwise, if there are TTF files, only install those
+    for ext in [".otf", ".ttc", "ttf"]:
+        files = [item for item in archive.namelist() if item.endswith(ext)]
+        if len(files) > 0:
+            for item in files:
+                archive.extract(item, target_dir)
+            return
 
-    otf_folders = [item for item in top_level if "otf" in item.lower()]
-    if len(otf_folders) > 0:
-        # if there is an "otf" folder in the top level, only extract that
-        for item in archive.namelist():
-            for directory in otf_folders:
-                if item.startswith(directory):
-                    archive.extract(item, target_dir)
-                    break
-        return
-
-    ttf_folders = [item for item in top_level if "ttf" in item.lower()]
-    if len(ttf_folders) > 0:
-        # otherwise, if there is an "ttf" folder in the top level, only extract that
-        for item in archive.namelist():
-            for directory in ttf_folders:
-                if item.startswith(directory):
-                    archive.extract(item, target_dir)
-                    break
-        return
-
-    desktop_folders = [item for item in top_level if "desktop" in item.lower()]
+    # Otherwise, if there are a top-level "desktop" folders, only install those
+    desktop_folders = [
+        item for item in archive.namelist() if "desktop" in item.split("/")[0].lower()
+    ]
     if len(desktop_folders) > 0:
         for item in archive.namelist():
             for directory in desktop_folders:
@@ -135,9 +127,6 @@ def _extract_selectively(archive, target_dir):
 
     # Fallback: Just unzip the entire archive
     archive.extractall(target_dir)
-    # Sometimes, the archives will contain stray __MACOSX files. Remove those
-    if (target_dir / "__MACOSX").exists():
-        shutil.rmtree(target_dir / "__MACOSX")
 
 
 def _fetch_info_rest(repo, token=None):

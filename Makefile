@@ -35,7 +35,8 @@ lint:
 	flake8 .
 
 install:
-	fontman install \
+	@fontman install \
+		-t ~/.github-access-token \
 		microsoft/cascadia-code \
 		be5invis/Iosevka \
 		i-tu/Hasklig \
@@ -52,7 +53,7 @@ install:
 		adobe-fonts/source-serif
 
 remove:
-	fontman rm \
+	@fontman rm \
 		microsoft/cascadia-code \
 		be5invis/Iosevka \
 		i-tu/Hasklig \
