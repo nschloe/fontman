@@ -9,6 +9,7 @@ from typing import Optional
 import requests
 from rich.console import Console
 
+from ._errors import FontmanError
 from .tools import get_dir
 
 
@@ -38,7 +39,12 @@ def _install_single(repo: str, token: Optional[str] = None, force: bool = False)
             )
             return
 
-    tag, assets = _fetch_info_rest(repo, token)
+    try:
+        tag, assets = _fetch_info_rest(repo, token)
+    except FontmanError as e:
+        console.print(str(e), style="red")
+        return
+
     _download_and_install(target_dir, repo, assets, tag)
     console.print(f"Successfully installed [bold]{repo} {tag}[/]")
 
@@ -145,7 +151,11 @@ def _fetch_info_rest(repo, token=None):
 
     res = requests.get(url, headers=headers)
     if not res.ok:
-        raise RuntimeError(f"Failed request to {url} ({res.status_code}, {res.reason})")
+        if res.status_code == 404:
+            msg = f"Found no releases for {repo}"
+        else:
+            msg = f"Failed request to {url} ({res.status_code}, {res.reason})"
+        raise FontmanError(msg)
 
     res_json = res.json()
     assert not res_json["prerelease"]

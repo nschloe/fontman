@@ -33,3 +33,18 @@ lint:
 	isort --check .
 	black --check .
 	flake8 .
+
+install:
+	fontman install \
+		microsoft/cascadia-code \
+		be5invis/Iosevka \
+		i-tu/Hasklig \
+		adobe-fonts/source-code-pro \
+		rsms/inter \
+		googlefonts/roboto \
+		tonsky/FiraCode \
+		JetBrains/JetBrainsMono \
+		larsenwork/monoid \
+		IBM/plex \
+		belluzj/fantasque-sans \
+		madmalik/mononoki
