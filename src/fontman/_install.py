@@ -107,33 +107,39 @@ def _download_and_install(target_dir, repo, assets, tag_name):
         shutil.rmtree(target_dir)
 
     if asset["content_type"] in ["application/zip", "application/x-zip-compressed"]:
-        unzipper = zipfile.ZipFile(io.BytesIO(res.content), "r")
+        archive = zipfile.ZipFile(io.BytesIO(res.content), "r")
     elif asset["content_type"] == "application/x-gzip":
-        unzipper = tarfile.open(fileobj=res.raw, mode="r|gz")
+        archive = tarfile.open(fileobj=res.raw, mode="r|gz")
     elif asset["content_type"] == "application/x-xz":
-        unzipper = tarfile.open(fileobj=res.raw, mode="r|xz")
+        archive = tarfile.open(fileobj=res.raw, mode="r|xz")
     else:
         raise RuntimeError(f"Unknown content type {asset['content_type']}")
 
     # get the top-level files/directories of the archive
-    top_level = {item.split('/')[0].lower() for item in unzipper.namelist()}
-    # if there is an "otf" folder in the top level, only extract that
-    otf = None
-    for item in top_level:
-        if "otf" in item:
-            otf = item
-            break
+    top_level = {item.split("/")[0] for item in archive.namelist()}
+    otf_folders = [item for item in top_level if "otf" in item.lower()]
+    ttf_folders = [item for item in top_level if "ttf" in item.lower()]
 
-    print(unzipper.namelist())
-    print(top_level)
-    print(otf)
-
-    with unzipper:
-        unzipper.extractall(target_dir)
-
-    # Sometimes, the archives will contain stray __MACOSX files. Remove those
-    if (target_dir / "__MACOSX").exists():
-        shutil.rmtree(target_dir / "__MACOSX")
+    if len(otf_folders) > 0:
+        # if there is an "otf" folder in the top level, only extract that
+        for item in archive.namelist():
+            for directory in otf_folders:
+                if item.startswith(directory + "/"):
+                    archive.extract(item, target_dir)
+                    break
+    elif len(ttf_folders) > 0:
+        # otherwise, if there is an "ttf" folder in the top level, only extract that
+        for item in archive.namelist():
+            for directory in ttf_folders:
+                if item.startswith(directory + "/"):
+                    archive.extract(item, target_dir)
+                    break
+    else:
+        # Fallback: Just unzip the entire archive
+        archive.extractall(target_dir)
+        # Sometimes, the archives will contain stray __MACOSX files. Remove those
+        if (target_dir / "__MACOSX").exists():
+            shutil.rmtree(target_dir / "__MACOSX")
 
     # add database file
     db = {
