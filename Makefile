@@ -50,7 +50,10 @@ install:
 		belluzj/fantasque-sans \
 		madmalik/mononoki \
 		adobe-fonts/source-sans \
-		adobe-fonts/source-serif
+		adobe-fonts/source-serif \
+		source-foundry/Hack \
+		arrowtype/recursive \
+		uswds/public-sans
 
 remove:
 	@fontman rm \
@@ -67,4 +70,7 @@ remove:
 		belluzj/fantasque-sans \
 		madmalik/mononoki \
 		adobe-fonts/source-sans \
-		adobe-fonts/source-serif
+		adobe-fonts/source-serif \
+		source-foundry/Hack \
+		arrowtype/recursive \
+		uswds/public-sans

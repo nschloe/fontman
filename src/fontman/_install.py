@@ -1,6 +1,7 @@
 import datetime
 import io
 import json
+import pathlib
 import shutil
 import tarfile
 import zipfile
@@ -59,6 +60,11 @@ def _download_and_install(target_dir, repo, assets, tag_name):
         ratings = [0] * len(assets)
         for k, item in enumerate(assets):
             if "otf" in item["name"].lower():
+                ratings[k] += 4
+            elif "super-ttc" in item["name"].lower():
+                # Iosevka has those super-ttc fonts
+                ratings[k] += 3
+            elif "ttc" in item["name"].lower():
                 ratings[k] += 2
             elif "ttf" in item["name"].lower():
                 ratings[k] += 1
@@ -66,8 +72,29 @@ def _download_and_install(target_dir, repo, assets, tag_name):
         max_rating_assets = [
             asset for asset, rating in zip(assets, ratings) if rating == max(ratings)
         ]
-        # pick the one with the smallest size
-        asset = min(max_rating_assets, key=lambda item: item["size"])
+
+        # From those, chose the least specific ones, i.e., the ones with the shortest
+        # stem. This satisfies the Iosevka use case where you have tons of super-ttc
+        # files
+        #
+        #   super-ttc-iosevka-7.3.0.zip
+        #   super-ttc-iosevka-aile-7.3.0.zip
+        #   super-ttc-iosevka-curly-7.3.0.zip
+        #   ...
+        #
+        # We only want the first
+        min_stem_length = min(
+            len(pathlib.Path(item["name"]).stem) for item in max_rating_assets
+        )
+
+        shortest_name_assets = [
+            item
+            for item in max_rating_assets
+            if len(pathlib.Path(item["name"]).stem) == min_stem_length
+        ]
+
+        # From those, pick the one with the smallest size
+        asset = min(shortest_name_assets, key=lambda item: item["size"])
 
     url = asset["browser_download_url"]
     res = requests.get(url, stream=True)
