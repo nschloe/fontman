@@ -5,6 +5,10 @@ from importlib import metadata
 import appdirs
 
 
+def normalize_dirname(string):
+    return string.replace("/", "_").lower()
+
+
 def get_version_text(prog):
     try:
         version = metadata.version("fontman")

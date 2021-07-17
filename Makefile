@@ -47,4 +47,23 @@ install:
 		larsenwork/monoid \
 		IBM/plex \
 		belluzj/fantasque-sans \
-		madmalik/mononoki
+		madmalik/mononoki \
+		adobe-fonts/source-sans \
+		adobe-fonts/source-serif
+
+remove:
+	fontman rm \
+		microsoft/cascadia-code \
+		be5invis/Iosevka \
+		i-tu/Hasklig \
+		adobe-fonts/source-code-pro \
+		rsms/inter \
+		googlefonts/roboto \
+		tonsky/FiraCode \
+		JetBrains/JetBrainsMono \
+		larsenwork/monoid \
+		IBM/plex \
+		belluzj/fantasque-sans \
+		madmalik/mononoki \
+		adobe-fonts/source-sans \
+		adobe-fonts/source-serif

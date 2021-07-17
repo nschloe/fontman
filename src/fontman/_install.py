@@ -10,7 +10,7 @@ import requests
 from rich.console import Console
 
 from ._errors import FontmanError
-from .tools import get_dir
+from .tools import get_dir, normalize_dirname
 
 
 def install_fonts(repos, token_file, force):
@@ -21,7 +21,7 @@ def install_fonts(repos, token_file, force):
 
 
 def _install_single(repo: str, token: Optional[str] = None, force: bool = False):
-    dirname = repo.replace("/", "_").lower()
+    dirname = normalize_dirname(repo)
     target_dir = get_dir() / dirname
 
     console = Console()

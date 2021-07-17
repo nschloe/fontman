@@ -1,0 +1,2 @@
+class FontmanError(Exception):
+    pass

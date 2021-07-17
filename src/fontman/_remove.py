@@ -3,7 +3,7 @@ import shutil
 
 from rich.console import Console
 
-from .tools import get_dir
+from .tools import get_dir, normalize_dirname
 
 
 def remove(names):
@@ -14,7 +14,7 @@ def remove(names):
         if not ((directory / "fontman.json").exists()):
             continue
         for name in names:
-            if name.lower() in directory.name.lower():
+            if normalize_dirname(name) in directory.name.lower():
                 scheduled_dirs.append(directory)
                 break
 
