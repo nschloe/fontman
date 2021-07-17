@@ -31,6 +31,14 @@ def _cli_install(argv=None):
     )
 
     parser.add_argument(
+        "-f",
+        "--force",
+        default=False,
+        action="store_true",
+        help="Force re-installation (default: false)",
+    )
+
+    parser.add_argument(
         "--version",
         "-v",
         action="version",
@@ -43,26 +51,27 @@ def _cli_install(argv=None):
     token = args.token_file.readline().strip() if args.token_file else None
 
     for repo in args.repo:
-        install(repo, token)
+        install(repo, token, args.force)
 
 
-def install(repo: str, token: Optional[str] = None):
+def install(repo: str, token: Optional[str] = None, force: bool = False):
     dirname = repo.replace("/", "_").lower()
     target_dir = get_dir() / dirname
 
     console = Console()
 
-    db_file = target_dir / "fontman.json"
-    if db_file.exists():
-        console.print(f"{repo} is already installed", style="yellow")
-        return
+    if not force:
+        db_file = target_dir / "fontman.json"
+        if db_file.exists():
+            console.print(f"{repo} is already installed", style="yellow")
+            return
 
-    if target_dir.exists():
-        console.print(
-            "Target directory exists but does not contain fontman-installed font",
-            style="red",
-        )
-        return
+        if target_dir.exists():
+            console.print(
+                "Target directory exists but does not contain fontman-installed font",
+                style="red",
+            )
+            return
 
     tag, assets = _fetch_info_rest(repo, token)
     _download_and_install(target_dir, repo, assets, tag)
@@ -98,16 +107,33 @@ def _download_and_install(target_dir, repo, assets, tag_name):
         shutil.rmtree(target_dir)
 
     if asset["content_type"] in ["application/zip", "application/x-zip-compressed"]:
-        with zipfile.ZipFile(io.BytesIO(res.content), "r") as z:
-            z.extractall(target_dir)
+        unzipper = zipfile.ZipFile(io.BytesIO(res.content), "r")
     elif asset["content_type"] == "application/x-gzip":
-        with tarfile.open(fileobj=res.raw, mode="r|gz") as f:
-            f.extractall(target_dir)
+        unzipper = tarfile.open(fileobj=res.raw, mode="r|gz")
     elif asset["content_type"] == "application/x-xz":
-        with tarfile.open(fileobj=res.raw, mode="r|xz") as f:
-            f.extractall(target_dir)
+        unzipper = tarfile.open(fileobj=res.raw, mode="r|xz")
     else:
         raise RuntimeError(f"Unknown content type {asset['content_type']}")
+
+    # get the top-level files/directories of the archive
+    top_level = {item.split('/')[0].lower() for item in unzipper.namelist()}
+    # if there is an "otf" folder in the top level, only extract that
+    otf = None
+    for item in top_level:
+        if "otf" in item:
+            otf = item
+            break
+
+    print(unzipper.namelist())
+    print(top_level)
+    print(otf)
+
+    with unzipper:
+        unzipper.extractall(target_dir)
+
+    # Sometimes, the archives will contain stray __MACOSX files. Remove those
+    if (target_dir / "__MACOSX").exists():
+        shutil.rmtree(target_dir / "__MACOSX")
 
     # add database file
     db = {
