@@ -115,31 +115,7 @@ def _download_and_install(target_dir, repo, assets, tag_name):
     else:
         raise RuntimeError(f"Unknown content type {asset['content_type']}")
 
-    # get the top-level files/directories of the archive
-    top_level = {item.split("/")[0] for item in archive.namelist()}
-    otf_folders = [item for item in top_level if "otf" in item.lower()]
-    ttf_folders = [item for item in top_level if "ttf" in item.lower()]
-
-    if len(otf_folders) > 0:
-        # if there is an "otf" folder in the top level, only extract that
-        for item in archive.namelist():
-            for directory in otf_folders:
-                if item.startswith(directory + "/"):
-                    archive.extract(item, target_dir)
-                    break
-    elif len(ttf_folders) > 0:
-        # otherwise, if there is an "ttf" folder in the top level, only extract that
-        for item in archive.namelist():
-            for directory in ttf_folders:
-                if item.startswith(directory + "/"):
-                    archive.extract(item, target_dir)
-                    break
-    else:
-        # Fallback: Just unzip the entire archive
-        archive.extractall(target_dir)
-        # Sometimes, the archives will contain stray __MACOSX files. Remove those
-        if (target_dir / "__MACOSX").exists():
-            shutil.rmtree(target_dir / "__MACOSX")
+    _extract_selectively(archive, target_dir)
 
     # add database file
     db = {
@@ -149,6 +125,48 @@ def _download_and_install(target_dir, repo, assets, tag_name):
     }
     with open(target_dir / "fontman.json", "w") as f:
         json.dump(db, f, indent=2)
+
+
+def _extract_selectively(archive, target_dir):
+    # get the top-level files/directories of the archive
+    top_level = {
+        item for item in archive.namelist() if item[-1] == "/" and item.count("/") == 1
+    }
+
+    otf_folders = [item for item in top_level if "otf" in item.lower()]
+    if len(otf_folders) > 0:
+        # if there is an "otf" folder in the top level, only extract that
+        for item in archive.namelist():
+            for directory in otf_folders:
+                if item.startswith(directory):
+                    archive.extract(item, target_dir)
+                    break
+        return
+
+    ttf_folders = [item for item in top_level if "ttf" in item.lower()]
+    if len(ttf_folders) > 0:
+        # otherwise, if there is an "ttf" folder in the top level, only extract that
+        for item in archive.namelist():
+            for directory in ttf_folders:
+                if item.startswith(directory):
+                    archive.extract(item, target_dir)
+                    break
+        return
+
+    desktop_folders = [item for item in top_level if "desktop" in item.lower()]
+    if len(desktop_folders) > 0:
+        for item in archive.namelist():
+            for directory in desktop_folders:
+                if item.startswith(directory):
+                    archive.extract(item, target_dir)
+                    break
+        return
+
+    # Fallback: Just unzip the entire archive
+    archive.extractall(target_dir)
+    # Sometimes, the archives will contain stray __MACOSX files. Remove those
+    if (target_dir / "__MACOSX").exists():
+        shutil.rmtree(target_dir / "__MACOSX")
 
 
 def _fetch_info_rest(repo, token=None):
