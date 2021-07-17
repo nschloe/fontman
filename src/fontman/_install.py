@@ -59,14 +59,14 @@ def _download_and_install(target_dir, repo, assets, tag_name):
         # If there are multiple assets, choose one. First, create a rating.
         ratings = [0] * len(assets)
         for k, item in enumerate(assets):
-            if "otf" in item["name"].lower():
+            if "otf" in item["name"].lower() or "opentype" in item["name"].lower():
                 ratings[k] += 4
             elif "super-ttc" in item["name"].lower():
                 # Iosevka has those super-ttc fonts
                 ratings[k] += 3
             elif "ttc" in item["name"].lower():
                 ratings[k] += 2
-            elif "ttf" in item["name"].lower():
+            elif "ttf" in item["name"].lower() or "truetype"in item["name"].lower():
                 ratings[k] += 1
 
         max_rating_assets = [
