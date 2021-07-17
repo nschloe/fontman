@@ -1,4 +1,3 @@
-import argparse
 import datetime
 import io
 import json
@@ -10,51 +9,17 @@ from typing import Optional
 import requests
 from rich.console import Console
 
-from .tools import get_dir, get_version_text
+from .tools import get_dir
 
 
-def _cli_install(argv=None):
-    parser = argparse.ArgumentParser(
-        description=("Install fonts from GitHub."),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+def install_fonts(repos, token_file, force):
+    token = token_file.readline().strip() if token_file else None
 
-    parser.add_argument(
-        "repo", nargs="+", type=str, help="GitHub repository fonts to install"
-    )
-
-    parser.add_argument(
-        "-t",
-        "--token-file",
-        type=argparse.FileType("r"),
-        help="File containing a GitHub token (can be - [stdin])",
-    )
-
-    parser.add_argument(
-        "-f",
-        "--force",
-        default=False,
-        action="store_true",
-        help="Force re-installation (default: false)",
-    )
-
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=get_version_text(parser.prog),
-        help="display version information",
-    )
-
-    args = parser.parse_args(argv)
-
-    token = args.token_file.readline().strip() if args.token_file else None
-
-    for repo in args.repo:
-        install(repo, token, args.force)
+    for repo in repos:
+        _install_single(repo, token, force)
 
 
-def install(repo: str, token: Optional[str] = None, force: bool = False):
+def _install_single(repo: str, token: Optional[str] = None, force: bool = False):
     dirname = repo.replace("/", "_").lower()
     target_dir = get_dir() / dirname
 

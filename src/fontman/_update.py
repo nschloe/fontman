@@ -1,4 +1,3 @@
-import argparse
 import json
 
 from rich import box
@@ -6,38 +5,12 @@ from rich.console import Console
 from rich.table import Table
 
 from ._install import _download_and_install, _fetch_info_rest
-from .tools import get_dir, get_version_text
+from .tools import get_dir
 
 
-def _cli_update(argv=None):
-    parser = argparse.ArgumentParser(
-        description=("Update fonts from GitHub."),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+def update_all(token_file=None):
+    token = token_file.readline().strip() if token_file else None
 
-    parser.add_argument(
-        "-t",
-        "--token-file",
-        type=argparse.FileType("r"),
-        help="File containing a GitHub token (can be - [stdin])",
-    )
-
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=get_version_text(parser.prog),
-        help="display version information",
-    )
-
-    args = parser.parse_args(argv)
-
-    token = args.token_file.readline().strip() if args.token_file else None
-
-    return update_all(token)
-
-
-def update_all(token):
     fontman_dir = get_dir()
 
     update_list = []

@@ -1,28 +1,10 @@
-import argparse
 import json
 
 from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from .tools import get_dir, get_version_text
-
-
-def _cli_list(argv=None):
-    parser = argparse.ArgumentParser(
-        description=("List installed fonts."),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=get_version_text(parser.prog),
-        help="display version information",
-    )
-
-    return list_fonts()
+from .tools import get_dir
 
 
 def list_fonts():

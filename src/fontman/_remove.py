@@ -1,36 +1,12 @@
-import argparse
 import json
 import shutil
-from typing import List
 
 from rich.console import Console
 
-from .tools import get_dir, get_version_text
+from .tools import get_dir
 
 
-def _cli_remove(argv=None):
-    parser = argparse.ArgumentParser(
-        description=("Remove installed fonts."),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-
-    parser.add_argument(
-        "name", nargs="+", type=str, help="GitHub repository fonts to remove"
-    )
-
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=get_version_text(parser.prog),
-        help="display version information",
-    )
-
-    args = parser.parse_args(argv)
-    return remove(args.name)
-
-
-def remove(names: List[str]):
+def remove(names):
     fontman_dir = get_dir()
 
     scheduled_dirs = []
