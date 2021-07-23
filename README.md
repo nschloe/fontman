@@ -30,7 +30,7 @@ fontman up
 ```
 which updates all your installed fonts.
 
-<img src="https://nschloe.github.io/fontman/terminal.gif" width="50%"/>
+<img src="https://nschloe.github.io/fontman/terminal.gif" width="70%"/>
 
 
 ### License
