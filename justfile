@@ -1,28 +1,25 @@
-VERSION=$(shell python3 -c "from configparser import ConfigParser; p = ConfigParser(); p.read('setup.cfg'); print(p['metadata']['version'])")
+version := `python3 -c "from configparser import ConfigParser; p = ConfigParser(); p.read('setup.cfg'); print(p['metadata']['version'])"`
+name := `python3 -c "from configparser import ConfigParser; p = ConfigParser(); p.read('setup.cfg'); print(p['metadata']['name'])"`
+
 
 default:
-	@echo "\"make publish\"?"
+	@echo "\"just publish\"?"
 
-# https://packaging.python.org/distributing/#id72
-upload:
-	# Make sure we're on the main branch
-	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
-	rm -f dist/*
-	# python3 setup.py sdist bdist_wheel
+tag:
+	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
+	curl -H "Authorization: token `cat ~/.github-access-token`" -d '{"tag_name": "{{version}}"}' https://api.github.com/repos/nschloe/{{name}}/releases
+
+upload: clean
+	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
 	# https://stackoverflow.com/a/58756491/353337
 	python3 -m build --sdist --wheel .
 	twine upload dist/*
 
-tag:
-	@if [ "$(shell git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
-	# Always create a github "release"; this automatically creates a Git tag, too.
-	curl -H "Authorization: token `cat $(HOME)/.github-access-token`" -d '{"tag_name": "v$(VERSION)"}' https://api.github.com/repos/nschloe/fontman/releases
-
 publish: tag upload
 
 clean:
-	@find . | grep -E "(__pycache__|\.pyc|\.pyo$\)" | xargs rm -rf
-	@rm -rf *.egg-info/ build/ dist/ MANIFEST .pytest_cache/
+	@find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
+	@rm -rf src/*.egg-info/ build/ dist/ .tox/
 
 format:
 	isort .
@@ -30,9 +27,9 @@ format:
 	blacken-docs README.md
 
 lint:
-	isort --check .
 	black --check .
 	flake8 .
+
 
 install:
 	@fontman install \
