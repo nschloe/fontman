@@ -35,7 +35,7 @@ def remove(names):
         console.print(f"  {repo}")
 
     console.print("\nRemove? \\[y/N] ", end="")
-    choice = input().lower()
+    choice = console.input().lower()
     if choice not in ["y", "yes"]:
         console.print("Abort.")
         return 1

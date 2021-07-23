@@ -48,13 +48,14 @@ def update_all(token_file=None):
     console.print(table)
 
     console.print("Update? [Y/n] ", end="")
-    choice = input().lower()
+    choice = console.input().lower()
     if choice in ["n", "no"]:
         console.print("Abort.")
         return 1
 
-    for target_dir, repo, _, new_tag, assets in update_list:
-        _download_and_install(target_dir, repo, assets, new_tag)
-        console.print(f"Successfully updated to {repo} {new_tag}")
+    with console.status("Updating..."):
+        for target_dir, repo, _, new_tag, assets in update_list:
+            _download_and_install(target_dir, repo, assets, new_tag)
+            console.print(f"Successfully updated to {repo} {new_tag}")
 
     return 0
