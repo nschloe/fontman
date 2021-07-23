@@ -13,9 +13,8 @@
 [![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/fontman.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/fontman)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
-Fonts used to be an install-once-and-forget thing, but many of are now updated
-regularly. fontman help you keep track of the fonts you installed and updates them from
-GitHub.
+Fonts used to be an install-and-forget thing, but many of are now updated regularly.
+_fontman_ helps you keep track of the fonts you installed and updates them from GitHub.
 
 Install with
 ```
@@ -30,6 +29,8 @@ Other commands are `remove` and `update`
 fontman up
 ```
 which updates all your installed fonts.
+
+<img src="https://nschloe.github.io/fontman/terminal.webm" width="50%"/>
 
 
 ### License
