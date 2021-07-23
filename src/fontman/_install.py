@@ -171,9 +171,9 @@ def _fetch_info_rest(repo, token=None):
     res = requests.get(url, headers=headers)
     if not res.ok:
         if res.status_code == 404:
-            msg = f"Found no releases for {repo}"
+            msg = f"found no releases"
         else:
-            msg = f"Failed request to {url} ({res.status_code}, {res.reason})"
+            msg = f"failed request to {url} ({res.status_code}, {res.reason})"
         raise FontmanError(msg)
 
     res_json = res.json()
