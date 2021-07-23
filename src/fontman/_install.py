@@ -16,9 +16,12 @@ from .tools import get_dir, normalize_dirname
 
 def install_fonts(repos, token_file, force):
     token = token_file.readline().strip() if token_file else None
+    console = Console()
 
-    for repo in repos:
-        _install_single(repo, token, force)
+    with console.status("Installing...") as status:
+        for repo in repos:
+            status.update(f"Installing {repo}...")
+            _install_single(repo, token, force)
 
 
 def _install_single(repo: str, token: Optional[str] = None, force: bool = False):
@@ -47,7 +50,7 @@ def _install_single(repo: str, token: Optional[str] = None, force: bool = False)
         return
 
     _download_and_install(target_dir, repo, assets, tag)
-    console.print(f"Successfully installed [bold]{repo} {tag}[/]")
+    console.print(f"done ([bold]{tag}[/])")
 
 
 def _download_and_install(target_dir, repo, assets, tag_name):
