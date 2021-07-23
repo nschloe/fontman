@@ -1,4 +1,7 @@
-# fontman
+<p align="center">
+  <a href="https://github.com/nschloe/fontman"><img alt="fontman" src="https://nschloe.github.io/fontman/logo-path.svg" width="60%"></a>
+  <p align="center">Your font manager.</p>
+</p>
 
 [![PyPi Version](https://img.shields.io/pypi/v/fontman.svg?style=flat-square)](https://pypi.org/project/fontman)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/fontman.svg?style=flat-square)](https://pypi.org/pypi/fontman/)
