@@ -69,7 +69,7 @@ def _download_and_install(target_dir, repo, assets, tag_name):
                 ratings[k] += 3
             elif "ttc" in item["name"].lower():
                 ratings[k] += 2
-            elif "ttf" in item["name"].lower() or "truetype"in item["name"].lower():
+            elif "ttf" in item["name"].lower() or "truetype" in item["name"].lower():
                 ratings[k] += 1
 
         max_rating_assets = [
@@ -171,7 +171,7 @@ def _fetch_info_rest(repo, token=None):
     res = requests.get(url, headers=headers)
     if not res.ok:
         if res.status_code == 404:
-            msg = f"found no releases"
+            msg = "found no releases"
         else:
             msg = f"failed request to {url} ({res.status_code}, {res.reason})"
         raise FontmanError(msg)

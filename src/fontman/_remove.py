@@ -1,12 +1,13 @@
 import json
 import shutil
+from typing import List
 
 from rich.console import Console
 
 from .tools import get_dir, normalize_dirname
 
 
-def remove(names):
+def remove(names: List[str], yes: bool = False):
     fontman_dir = get_dir()
 
     scheduled_dirs = []
@@ -34,11 +35,12 @@ def remove(names):
     for repo in repos:
         console.print(f"  {repo}")
 
-    console.print("\nRemove? \\[y/N] ", end="")
-    choice = console.input().lower()
-    if choice not in ["y", "yes"]:
-        console.print("Abort.")
-        return 1
+    if not yes:
+        console.print("\nRemove? \\[y/N] ", end="")
+        choice = console.input().lower()
+        if choice not in ["y", "yes"]:
+            console.print("Abort.")
+            return 1
 
     for repo, directory in zip(repos, scheduled_dirs):
         shutil.rmtree(directory)
