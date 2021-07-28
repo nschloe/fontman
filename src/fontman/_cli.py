@@ -41,7 +41,7 @@ def cli(argv=None):
         "remove", help="Remove fonts", aliases=["rm", "uninstall"]
     )
     _cli_remove(parser_remove)
-    parser_remove.set_defaults(func=lambda args: remove(args.names, args.yes))
+    parser_remove.set_defaults(func=lambda args: remove(args.names))
 
     parser_update = subparsers.add_parser(
         "update", help="Update installed fonts", aliases=["upgrade", "up"]
@@ -86,9 +86,6 @@ def _cli_install(parser):
 def _cli_remove(parser):
     parser.add_argument(
         "names", nargs="+", type=str, help="GitHub repository fonts to remove"
-    )
-    parser.add_argument(
-        "--yes", "-y", action="store_true", help="Automatically answer yes"
     )
 
 
