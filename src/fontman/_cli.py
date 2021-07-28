@@ -1,10 +1,11 @@
 import argparse
+from importlib import metadata
+from sys import version_info
 
 from ._install import install_fonts
 from ._list import list_fonts
 from ._remove import remove
 from ._update import update_all
-from .tools import get_version_text
 
 
 def cli(argv=None):
@@ -17,7 +18,7 @@ def cli(argv=None):
         "--version",
         "-v",
         action="version",
-        version=get_version_text(parser.prog),
+        version=get_version_text(),
         help="display version information",
     )
 
@@ -76,14 +77,6 @@ def _cli_install(parser):
         help="Force re-installation (default: false)",
     )
 
-    parser.add_argument(
-        "--version",
-        "-v",
-        action="version",
-        version=get_version_text(parser.prog),
-        help="display version information",
-    )
-
     # token = args.token_file.readline().strip() if args.token_file else None
 
     # for repo in args.repo:
@@ -106,3 +99,19 @@ def _cli_update(parser):
         type=argparse.FileType("r"),
         help="File containing a GitHub token (can be - [stdin])",
     )
+
+
+def get_version_text():
+    try:
+        version = metadata.version("fontman")
+    except Exception:
+        version = "unknown"
+
+    python_version = f"{version_info.major}.{version_info.minor}.{version_info.micro}"
+    version_text = "\n".join(
+        [
+            f"fontman {version} [Python {python_version}]",
+            "Copyright (c) 2021 Nico Schlömer <nico.schloemer@gmail.com>",
+        ]
+    )
+    return version_text
