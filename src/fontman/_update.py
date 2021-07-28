@@ -23,7 +23,7 @@ def update_all(token_file=None):
             d = json.load(f)
 
         old_tag = d["tag"]
-        new_tag, assets = _fetch_info_rest(d["repo"], token)
+        new_tag, assets = _fetch_info_rest(d["repo"], token=token)
 
         if old_tag != new_tag:
             update_list.append((directory, d["repo"], old_tag, new_tag, assets))
