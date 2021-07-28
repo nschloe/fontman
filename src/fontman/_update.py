@@ -16,8 +16,6 @@ def update_all(token_file=None):
     update_list = []
 
     for directory in sorted(fontman_dir.glob("*")):
-        if not directory.is_dir():
-            continue
         if not (directory / "fontman.json").exists():
             continue
 

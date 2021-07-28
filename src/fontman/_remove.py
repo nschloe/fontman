@@ -7,12 +7,12 @@ from rich.console import Console
 from .tools import get_dir, normalize_dirname
 
 
-def remove(names: List[str], yes: bool = False):
+def remove(names: List[str]):
     fontman_dir = get_dir()
 
     scheduled_dirs = []
     for directory in fontman_dir.glob("*"):
-        if not ((directory / "fontman.json").exists()):
+        if not (directory / "fontman.json").exists():
             continue
         for name in names:
             if normalize_dirname(name) in directory.name.lower():
@@ -35,12 +35,11 @@ def remove(names: List[str], yes: bool = False):
     for repo in repos:
         console.print(f"  {repo}")
 
-    if not yes:
-        console.print("\nRemove? \\[y/N] ", end="")
-        choice = console.input().lower()
-        if choice not in ["y", "yes"]:
-            console.print("Abort.")
-            return 1
+    console.print("\nRemove? \\[y/N] ", end="")
+    choice = console.input().lower()
+    if choice not in ["y", "yes"]:
+        console.print("Abort.")
+        return 1
 
     for repo, directory in zip(repos, scheduled_dirs):
         shutil.rmtree(directory)

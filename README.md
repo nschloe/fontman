@@ -17,15 +17,15 @@ Fonts used to be an install-and-forget thing, but many of are now updated regula
 _fontman_ helps you keep track of the fonts you installed and updates them from GitHub.
 
 Install with
-```
+```sh
 pip install fontman
 ```
 and use as
-```
+```sh
 fontman install microsoft/cascadia-code rsms/inter ibm/plex==v5.1.3
 ```
 Other commands are `remove` and `update`
-```
+```sh
 fontman up
 ```
 which updates all your installed fonts.
