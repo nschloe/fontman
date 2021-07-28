@@ -5,7 +5,7 @@ import pathlib
 import shutil
 import tarfile
 import zipfile
-from typing import Optional
+from typing import List, Optional
 
 import requests
 from rich.console import Console
@@ -14,18 +14,28 @@ from ._errors import FontmanError
 from .tools import get_dir, normalize_dirname
 
 
-def install_fonts(repos, token_file, force):
+def install_fonts(strings: List[str], token_file, force: bool):
     token = token_file.readline().strip() if token_file else None
     console = Console()
 
     with console.status("Installing...") as status:
-        for repo in repos:
-            status.update(f"Installing {repo}...")
-            _install_single(repo, token, force)
+        for string in strings:
+            status.update(f"Installing {string}...")
+            _install_single(string, token, force)
 
 
-def _install_single(repo: str, token: Optional[str] = None, force: bool = False):
-    dirname = normalize_dirname(repo)
+def _install_single(string: str, token: Optional[str] = None, force: bool = False):
+    # separate name and version
+    res = string.split("==")
+    if len(res) == 1:
+        name = string
+        tag = None
+    else:
+        assert len(res) == 2
+        name = res[0]
+        tag = res[1]
+
+    dirname = normalize_dirname(name)
     target_dir = get_dir() / dirname
 
     console = Console()
@@ -33,7 +43,7 @@ def _install_single(repo: str, token: Optional[str] = None, force: bool = False)
     if not force:
         db_file = target_dir / "fontman.json"
         if db_file.exists():
-            console.print(f"{repo} is already installed", style="yellow")
+            console.print(f"{name} is already installed", style="yellow")
             return
 
         if target_dir.exists():
@@ -44,12 +54,12 @@ def _install_single(repo: str, token: Optional[str] = None, force: bool = False)
             return
 
     try:
-        tag, assets = _fetch_info_rest(repo, token)
+        tag, assets = _fetch_info_rest(name, tag, token)
     except FontmanError as e:
         console.print(str(e), style="red")
         return
 
-    _download_and_install(target_dir, repo, assets, tag)
+    _download_and_install(target_dir, name, assets, tag)
     console.print(f"done ([bold]{tag}[/])")
 
 
@@ -159,10 +169,12 @@ def _extract_selectively(archive, target_dir):
     archive.extractall(target_dir)
 
 
-def _fetch_info_rest(repo, token=None):
+def _fetch_info_rest(name: str, tag: Optional[str] = None, token: Optional[str] = None):
     # The latest release is the most recent non-prerelease, non-draft release, sorted by
     # the created_at attribute.
-    url = f"https://api.github.com/repos/{repo}/releases/latest"
+
+    url = f"https://api.github.com/repos/{name}/releases/"
+    url += "latest" if tag is None else f"tags/{tag}"
 
     headers = {}
     if token is not None:
@@ -171,7 +183,7 @@ def _fetch_info_rest(repo, token=None):
     res = requests.get(url, headers=headers)
     if not res.ok:
         if res.status_code == 404:
-            msg = "found no releases"
+            msg = "not found"
         else:
             msg = f"failed request to {url} ({res.status_code}, {res.reason})"
         raise FontmanError(msg)

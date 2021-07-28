@@ -11,4 +11,5 @@ def test_list():
 
 
 def test_update():
+    fontman.cli(["install", "ibm/plex==v5.1.3"])
     fontman.cli(["up"])
