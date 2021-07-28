@@ -3,6 +3,7 @@ import fontman
 
 def test_install_remove():
     fontman.cli(["install", "adobe-fonts/source-code-pro"])
+    fontman.cli(["list"])
     fontman.cli(["rm", "adobe-fonts/source-code-pro", "--yes"])
 
 
