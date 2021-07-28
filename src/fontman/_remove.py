@@ -12,7 +12,7 @@ def remove(names: List[str], yes: bool = False):
 
     scheduled_dirs = []
     for directory in fontman_dir.glob("*"):
-        if not ((directory / "fontman.json").exists()):
+        if not (directory / "fontman.json").exists():
             continue
         for name in names:
             if normalize_dirname(name) in directory.name.lower():

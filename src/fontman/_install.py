@@ -182,15 +182,13 @@ def _fetch_info_rest(name: str, tag: Optional[str] = None, token: Optional[str] 
 
     res = requests.get(url, headers=headers)
     if not res.ok:
-        if res.status_code == 404:
-            msg = "not found"
-        else:
-            msg = f"failed request to {url} ({res.status_code}, {res.reason})"
-        raise FontmanError(msg)
+        raise FontmanError(
+            "not found"
+            if res.status_code == 404
+            else f"failed request to {url} ({res.status_code}, {res.reason})"
+        )
 
     res_json = res.json()
-    assert not res_json["prerelease"]
-    assert not res_json["draft"]
 
     return res_json["tag_name"], res_json["assets"]
 

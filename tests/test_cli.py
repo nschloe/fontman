@@ -8,7 +8,11 @@ def test_install_remove():
 
 
 def test_list():
+    # show empty
     fontman.cli(["list"])
+
+    out = fontman.cli(["rm", "adobe-fonts/source-code-pro", "--yes"])
+    assert out == 1
 
 
 def test_update(monkeypatch):
