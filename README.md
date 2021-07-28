@@ -31,3 +31,11 @@ fontman up
 which updates all your installed fonts.
 
 <img src="https://nschloe.github.io/fontman/terminal.gif" width="70%"/>
+
+### Fonts on GitHub
+
+#### Monospaced
+![github-monospaced-fonts](https://nschloe.github.io/stargraph/github-monospaced-fonts.svg)
+
+#### Other
+![github-other-fonts](https://nschloe.github.io/stargraph/github-other-fonts.svg)
