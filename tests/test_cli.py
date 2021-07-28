@@ -10,5 +10,9 @@ def test_list():
     fontman.cli(["list"])
 
 
-def test_update():
+def test_update(monkeypatch):
+    # https://stackoverflow.com/a/36377194/353337
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+
+    fontman.cli(["install", "ibm/plex==v5.1.3"])
     fontman.cli(["up"])

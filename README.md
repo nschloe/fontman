@@ -22,7 +22,7 @@ pip install fontman
 ```
 and use as
 ```
-fontman install microsoft/cascadia-code rsms/inter
+fontman install microsoft/cascadia-code rsms/inter ibm/plex==v5.1.3
 ```
 Other commands are `remove` and `update`
 ```
@@ -31,7 +31,3 @@ fontman up
 which updates all your installed fonts.
 
 <img src="https://nschloe.github.io/fontman/terminal.gif" width="70%"/>
-
-
-### License
-This software is published under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
