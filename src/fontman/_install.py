@@ -5,7 +5,8 @@ import pathlib
 import shutil
 import tarfile
 import zipfile
-from typing import List, Optional
+from pathlib import Path
+from typing import Dict, List, Optional
 
 import requests
 from rich.console import Console
@@ -20,95 +21,94 @@ def install_fonts(strings: List[str], token_file, force: bool):
 
     with console.status("Installing...") as status:
         for string in strings:
-            status.update(f"Installing {string}...")
-            _install_single(string, token, force)
+            # separate name and version
+            res = string.split("==")
+            if len(res) == 1:
+                name = string
+                tag = None
+            else:
+                assert len(res) == 2
+                name = res[0]
+                tag = res[1]
+
+            dirname = normalize_dirname(name)
+            target_dir = get_dir() / dirname
+
+            console = Console()
+
+            if not force:
+                db_file = target_dir / "fontman.json"
+                if db_file.exists():
+                    console.print(f"{name} is already installed", style="yellow")
+                    return
+
+                if target_dir.exists():
+                    console.print(
+                        "Target directory exists but does not contain fontman-installed font",
+                        style="red",
+                    )
+                    return
+
+            try:
+                tag, assets = _fetch_info_rest(name, tag, token)
+            except FontmanError as e:
+                console.print(str(e), style="red")
+                return
+
+            asset = _pick_asset(assets)
+            size_mb = asset["size"] / 1024 / 1024
+            status.update(f"Installing {string} [{size_mb:.1f} MB]...")
+            _download_and_install(target_dir, name, asset, tag)
+            console.print(f"done ([bold]{tag}[/])")
 
 
-def _install_single(string: str, token: Optional[str] = None, force: bool = False):
-    # separate name and version
-    res = string.split("==")
-    if len(res) == 1:
-        name = string
-        tag = None
-    else:
-        assert len(res) == 2
-        name = res[0]
-        tag = res[1]
-
-    dirname = normalize_dirname(name)
-    target_dir = get_dir() / dirname
-
-    console = Console()
-
-    if not force:
-        db_file = target_dir / "fontman.json"
-        if db_file.exists():
-            console.print(f"{name} is already installed", style="yellow")
-            return
-
-        if target_dir.exists():
-            console.print(
-                "Target directory exists but does not contain fontman-installed font",
-                style="red",
-            )
-            return
-
-    try:
-        tag, assets = _fetch_info_rest(name, tag, token)
-    except FontmanError as e:
-        console.print(str(e), style="red")
-        return
-
-    _download_and_install(target_dir, name, assets, tag)
-    console.print(f"done ([bold]{tag}[/])")
-
-
-def _download_and_install(target_dir, repo, assets, tag_name):
+def _pick_asset(assets):
     if len(assets) == 0:
         raise RuntimeError("Release without assets")
     elif len(assets) == 1:
-        asset = assets[0]
-    else:
-        # If there are multiple assets, choose one. First, create a rating.
-        ratings = [0] * len(assets)
-        for k, item in enumerate(assets):
-            if "otf" in item["name"].lower() or "opentype" in item["name"].lower():
-                ratings[k] += 4
-            elif "super-ttc" in item["name"].lower():
-                # Iosevka has those super-ttc fonts
-                ratings[k] += 3
-            elif "ttc" in item["name"].lower():
-                ratings[k] += 2
-            elif "ttf" in item["name"].lower() or "truetype" in item["name"].lower():
-                ratings[k] += 1
+        return assets[0]
 
-        max_rating_assets = [
-            asset for asset, rating in zip(assets, ratings) if rating == max(ratings)
-        ]
+    # If there are multiple assets, choose one. First, create a rating.
+    ratings = [0] * len(assets)
+    for k, item in enumerate(assets):
+        if "otf" in item["name"].lower() or "opentype" in item["name"].lower():
+            ratings[k] += 4
+        elif "super-ttc" in item["name"].lower():
+            # Iosevka has those super-ttc fonts
+            ratings[k] += 3
+        elif "ttc" in item["name"].lower():
+            ratings[k] += 2
+        elif "ttf" in item["name"].lower() or "truetype" in item["name"].lower():
+            ratings[k] += 1
 
-        # From those, chose the least specific ones, i.e., the ones with the shortest
-        # stem. This satisfies the Iosevka use case where you have tons of super-ttc
-        # files
-        #
-        #   super-ttc-iosevka-7.3.0.zip
-        #   super-ttc-iosevka-aile-7.3.0.zip
-        #   super-ttc-iosevka-curly-7.3.0.zip
-        #   ...
-        #
-        # We only want the first
-        min_stem_length = min(
-            len(pathlib.Path(item["name"]).stem) for item in max_rating_assets
-        )
+    max_rating_assets = [
+        asset for asset, rating in zip(assets, ratings) if rating == max(ratings)
+    ]
 
-        shortest_name_assets = [
-            item
-            for item in max_rating_assets
-            if len(pathlib.Path(item["name"]).stem) == min_stem_length
-        ]
+    # From those, chose the least specific ones, i.e., the ones with the shortest stem.
+    # This satisfies the Iosevka use case where you have tons of super-ttc files
+    #
+    #   super-ttc-iosevka-7.3.0.zip
+    #   super-ttc-iosevka-aile-7.3.0.zip
+    #   super-ttc-iosevka-curly-7.3.0.zip
+    #   ...
+    #
+    # We only want the first
+    min_stem_length = min(
+        len(pathlib.Path(item["name"]).stem) for item in max_rating_assets
+    )
 
-        # From those, pick the one with the smallest size
-        asset = min(shortest_name_assets, key=lambda item: item["size"])
+    shortest_name_assets = [
+        item
+        for item in max_rating_assets
+        if len(pathlib.Path(item["name"]).stem) == min_stem_length
+    ]
 
+    # From those, pick the one with the smallest size
+    return min(shortest_name_assets, key=lambda item: item["size"])
+
+
+def _download_and_install(target_dir: Path, repo: str, asset: Dict, tag_name: str):
     url = asset["browser_download_url"]
     res = requests.get(url, stream=True)
     if not res.ok:

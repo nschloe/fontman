@@ -4,7 +4,7 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 
-from ._install import _download_and_install, _fetch_info_rest
+from ._install import _download_and_install, _fetch_info_rest, _pick_asset
 from .tools import get_dir
 
 
@@ -26,7 +26,8 @@ def update_all(token_file=None):
         new_tag, assets = _fetch_info_rest(d["repo"], token=token)
 
         if old_tag != new_tag:
-            update_list.append((directory, d["repo"], old_tag, new_tag, assets))
+            asset = _pick_asset(assets)
+            update_list.append((directory, d["repo"], old_tag, new_tag, asset))
 
     console = Console()
 
@@ -41,8 +42,10 @@ def update_all(token_file=None):
     table.add_column("old")
     table.add_column("arrow")
     table.add_column("new")
-    for _, repo, old_tag, new_tag, assets in update_list:
-        table.add_row(f"{repo}:", old_tag, "→", new_tag)
+    table.add_column("size")
+    for _, repo, old_tag, new_tag, asset in update_list:
+        size_mb = asset["size"] / 1024 / 1024
+        table.add_row(f"{repo}:", old_tag, "→", new_tag, f"[{size_mb:.1f} MB]")
     console.print(table)
 
     console.print("Update? [Y/n] ", end="")
@@ -52,8 +55,8 @@ def update_all(token_file=None):
         return 1
 
     with console.status("Updating..."):
-        for target_dir, repo, _, new_tag, assets in update_list:
-            _download_and_install(target_dir, repo, assets, new_tag)
+        for target_dir, repo, _, new_tag, asset in update_list:
+            _download_and_install(target_dir, repo, asset, new_tag)
             console.print(f"Successfully updated to {repo} {new_tag}")
 
     return 0
