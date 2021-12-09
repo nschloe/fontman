@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 import io
 import json
-import pathlib
 import shutil
 import tarfile
 import zipfile
@@ -95,14 +94,12 @@ def _pick_asset(assets):
     #   ...
     #
     # We only want the first
-    min_stem_length = min(
-        len(pathlib.Path(item["name"]).stem) for item in max_rating_assets
-    )
+    min_stem_length = min(len(Path(item["name"]).stem) for item in max_rating_assets)
 
     shortest_name_assets = [
         item
         for item in max_rating_assets
-        if len(pathlib.Path(item["name"]).stem) == min_stem_length
+        if len(Path(item["name"]).stem) == min_stem_length
     ]
 
     # From those, pick the one with the smallest size
