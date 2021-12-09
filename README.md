@@ -17,17 +17,23 @@ Fonts used to be an install-and-forget thing, but many of are now updated regula
 _fontman_ helps you keep track of the fonts you installed and updates them from GitHub.
 
 Install with
+
 ```sh
 pip install fontman
 ```
+
 and use as
+
 ```sh
 fontman install microsoft/cascadia-code rsms/inter ibm/plex==v5.1.3
 ```
+
 Other commands are `remove` and `update`
+
 ```sh
 fontman up
 ```
+
 which updates all your installed fonts.
 
 <img src="https://nschloe.github.io/fontman/terminal.gif" width="70%"/>
@@ -35,7 +41,9 @@ which updates all your installed fonts.
 ### Fonts on GitHub
 
 #### Monospaced
+
 ![github-monospaced-fonts](https://nschloe.github.io/stargraph/github-monospaced-fonts.svg)
 
 #### Other
+
 ![github-other-fonts](https://nschloe.github.io/stargraph/github-other-fonts.svg)

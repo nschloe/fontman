@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import json
 import shutil
-from typing import List
 
 from rich.console import Console
 
 from .tools import get_dir, normalize_dirname
 
 
-def remove(names: List[str]):
+def remove(names: list[str]) -> int:
     fontman_dir = get_dir()
 
     scheduled_dirs = []

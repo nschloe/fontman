@@ -8,7 +8,7 @@ from ._install import _download_and_install, _fetch_info_rest, _pick_asset
 from .tools import get_dir
 
 
-def update_all(token_file=None):
+def update_all(token_file=None) -> int:
     token = token_file.readline().strip() if token_file else None
 
     fontman_dir = get_dir()

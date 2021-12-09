@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import io
 import json
@@ -6,7 +8,6 @@ import shutil
 import tarfile
 import zipfile
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import requests
 from rich.console import Console
@@ -15,7 +16,7 @@ from ._errors import FontmanError
 from .tools import get_dir, normalize_dirname
 
 
-def install_fonts(strings: List[str], token_file, force: bool):
+def install_fonts(strings: list[str], token_file, force: bool) -> None:
     token = token_file.readline().strip() if token_file else None
     console = Console()
 
@@ -108,7 +109,9 @@ def _pick_asset(assets):
     return min(shortest_name_assets, key=lambda item: item["size"])
 
 
-def _download_and_install(target_dir: Path, repo: str, asset: Dict, tag_name: str):
+def _download_and_install(
+    target_dir: Path, repo: str, asset: dict, tag_name: str
+) -> None:
     url = asset["browser_download_url"]
     res = requests.get(url, stream=True)
     if not res.ok:
@@ -142,7 +145,7 @@ def _download_and_install(target_dir: Path, repo: str, asset: Dict, tag_name: st
         json.dump(db, f, indent=2)
 
 
-def _extract_selectively(archive, target_dir):
+def _extract_selectively(archive, target_dir: Path) -> None:
     # If there are OTF files, only install those
     # Otherwise, if there are TTC files, only install those
     # Otherwise, if there are TTF files, only install those
@@ -169,7 +172,9 @@ def _extract_selectively(archive, target_dir):
     archive.extractall(target_dir)
 
 
-def _fetch_info_rest(name: str, tag: Optional[str] = None, token: Optional[str] = None):
+def _fetch_info_rest(
+    name: str, tag: str | None = None, token: str | None = None
+) -> tuple[str, dict]:
     # The latest release is the most recent non-prerelease, non-draft release, sorted by
     # the created_at attribute.
 
