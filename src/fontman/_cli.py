@@ -22,7 +22,7 @@ def cli(argv=None):
         help="display version information",
     )
 
-    subparsers = parser.add_subparsers(title="subcommands")
+    subparsers = parser.add_subparsers(title="subcommands", required=True)
 
     parser_install = subparsers.add_parser(
         "install", help="Install new fonts", aliases=["i", "inst", "add"]

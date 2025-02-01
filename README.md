@@ -10,7 +10,6 @@
 
 [![gh-actions](https://img.shields.io/github/workflow/status/nschloe/fontman/ci?style=flat-square)](https://github.com/nschloe/fontman/actions?query=workflow%3Aci)
 [![codecov](https://img.shields.io/codecov/c/github/nschloe/fontman.svg?style=flat-square)](https://codecov.io/gh/nschloe/fontman)
-[![LGTM](https://img.shields.io/lgtm/grade/python/github/nschloe/fontman.svg?style=flat-square)](https://lgtm.com/projects/g/nschloe/fontman)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 
 Fonts used to be an install-and-forget thing, but many of are now updated regularly.
@@ -42,8 +41,8 @@ which updates all your installed fonts.
 
 #### Monospaced
 
-![github-monospaced-fonts](https://nschloe.github.io/stargraph/github-monospaced-fonts.svg)
+![github-monospaced-fonts](https://nschloe.github.io/gh-trends/monospaced-fonts.svg)
 
 #### Other
 
-![github-other-fonts](https://nschloe.github.io/stargraph/github-other-fonts.svg)
+![github-other-fonts](https://nschloe.github.io/gh-trends/other-fonts.svg)

@@ -1,7 +1,7 @@
 # fontman contributing guidelines
 
 The fontman community appreciates your contributions via issues and
-pull requests.  Note that the [code of conduct](CODE_OF_CONDUCT.md)
+pull requests. Note that the [code of conduct](CODE_OF_CONDUCT.md)
 applies to all interactions with the fontman project, including
 issues and pull requests.
 

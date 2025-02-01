@@ -1,33 +1,25 @@
-version := `python3 -c "from configparser import ConfigParser; p = ConfigParser(); p.read('setup.cfg'); print(p['metadata']['version'])"`
-name := `python3 -c "from configparser import ConfigParser; p = ConfigParser(); p.read('setup.cfg'); print(p['metadata']['name'])"`
-
+version := `python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])"`
 
 default:
 	@echo "\"just publish\"?"
 
-# tag:
-# 	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
-# 	curl -H "Authorization: token `cat ~/.github-access-token`" -d '{"tag_name": "{{version}}"}' https://api.github.com/repos/nschloe/{{name}}/releases
+publish: release
 
-upload: clean
+release:
 	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then exit 1; fi
-	flit publish
-
-publish: tag upload
+	gh release create {{version}}
 
 clean:
 	@find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
-	@rm -rf src/*.egg-info/ build/ dist/ .tox/
+	@rm -rf src/*.egg-info/ build/ dist/ .tox/ htmlcov/
 
 format:
-	isort .
-	black .
+	black src/ tests/
+	ruff check src/ tests/ --fix
 	blacken-docs README.md
 
 lint:
-	black --check .
-	flake8 .
-
+	pre-commit run --all
 
 install:
 	@fontman install \
