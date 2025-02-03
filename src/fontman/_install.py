@@ -62,31 +62,37 @@ def install_fonts(strings: list[str], token_file, force: bool) -> None:
             console.print(f"done ([bold]{tag}[/])")
 
 
-def _pick_asset(assets):
+def _pick_asset(assets: list):
+    # remove all files that are just hashes
+    assets = [asset for asset in assets if not asset["name"].endswith(".sha256")]
+
     if len(assets) == 0:
         raise RuntimeError("Release without assets")
-    elif len(assets) == 1:
+
+    if len(assets) == 1:
         return assets[0]
 
     # If there are multiple assets, choose one. First, create a rating.
     ratings = [0] * len(assets)
     for k, item in enumerate(assets):
-        if "otf" in item["name"].lower() or "opentype" in item["name"].lower():
+        name = item["name"].lower()
+        if "otf" in name or "opentype" in name:
             ratings[k] += 4
-        elif "super-ttc" in item["name"].lower():
+        elif "super-ttc" in name:
             # Iosevka has those super-ttc fonts
             ratings[k] += 3
-        elif "ttc" in item["name"].lower():
+        elif "ttc" in name:
             ratings[k] += 2
-        elif "ttf" in item["name"].lower() or "truetype" in item["name"].lower():
+        elif "ttf" in name or "truetype" in name:
             ratings[k] += 1
 
     max_rating_assets = [
         asset for asset, rating in zip(assets, ratings) if rating == max(ratings)
     ]
 
-    # From those, chose the least specific ones, i.e., the ones with the shortest stem.
-    # This satisfies the Iosevka use case where you have tons of super-ttc files
+    # From those, chose the least specific ones, i.e., the ones with the
+    # shortest stem. This satisfies the Iosevka use case where you have tons of
+    # super-ttc files
     #
     #   super-ttc-iosevka-7.3.0.zip
     #   super-ttc-iosevka-aile-7.3.0.zip
@@ -107,7 +113,10 @@ def _pick_asset(assets):
 
 
 def _download_and_install(
-    target_dir: Path, repo: str, asset: dict, tag_name: str
+    target_dir: Path,
+    repo: str,
+    asset: dict,
+    tag_name: str,
 ) -> None:
     url = asset["browser_download_url"]
     res = requests.get(url, stream=True)
@@ -117,7 +126,8 @@ def _download_and_install(
     if target_dir.exists():
         shutil.rmtree(target_dir)
 
-    if asset["content_type"] in ["application/zip", "application/x-zip-compressed"]:
+    archive: tarfile.TarFile | zipfile.ZipFile
+    if asset["content_type"] in {"application/zip", "application/x-zip-compressed"}:
         archive = zipfile.ZipFile(io.BytesIO(res.content), "r")
     elif asset["content_type"] == "application/x-gzip":
         archive = tarfile.open(fileobj=res.raw, mode="r|gz")
@@ -146,7 +156,7 @@ def _extract_selectively(archive, target_dir: Path) -> None:
     # If there are OTF files, only install those
     # Otherwise, if there are TTC files, only install those
     # Otherwise, if there are TTF files, only install those
-    for ext in [".otf", ".ttc", "ttf"]:
+    for ext in {".otf", ".ttc", ".ttf"}:
         files = [item for item in archive.namelist() if item.endswith(ext)]
         if len(files) > 0:
             for item in files:
