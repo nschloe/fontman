@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING
-
 import platformdirs
 
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
 
 
 def normalize_dirname(string: str) -> str:

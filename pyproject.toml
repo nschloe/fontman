@@ -36,5 +36,10 @@ urls.Funding = "https://github.com/sponsors/nschloe"
 urls.Issues = "https://github.com/nschloe/fontman/issues"
 scripts.fontman = "fontman:cli"
 
+[dependency-groups]
+test = [
+  "pytest",
+]
+
 [tool.mypy]
 ignore_missing_imports = true
