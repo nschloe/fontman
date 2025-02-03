@@ -26,7 +26,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "appdirs",
+  "platformdirs",
   "requests",
   "rich",
 ]

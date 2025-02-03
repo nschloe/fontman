@@ -33,7 +33,7 @@ def cli(argv=None):
     )
 
     parser_list = subparsers.add_parser(
-        "list", help="List installed fonts", aliases=["l"]
+        "list", help="List installed fonts", aliases=["ls"]
     )
     parser_list.set_defaults(func=lambda _: list_fonts())
 
