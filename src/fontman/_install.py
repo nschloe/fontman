@@ -130,9 +130,9 @@ def _download_and_install(
     if asset["content_type"] in {"application/zip", "application/x-zip-compressed"}:
         archive = zipfile.ZipFile(io.BytesIO(res.content), "r")
     elif asset["content_type"] == "application/x-gzip":
-        archive = tarfile.open(fileobj=res.raw, mode="r|gz")
+        archive = tarfile.open(fileobj=res.raw, mode="r|gz")  # type: ignore
     elif asset["content_type"] == "application/x-xz":
-        archive = tarfile.open(fileobj=res.raw, mode="r|xz")
+        archive = tarfile.open(fileobj=res.raw, mode="r|xz")  # type: ignore
     else:
         raise RuntimeError(f"Unknown content type {asset['content_type']}")
 
@@ -180,8 +180,10 @@ def _extract_selectively(archive, target_dir: Path) -> None:
 
 
 def _fetch_info_rest(
-    name: str, tag: str | None = None, token: str | None = None
-) -> tuple[str, dict]:
+    name: str,
+    tag: str | None = None,
+    token: str | None = None,
+) -> tuple[str, list]:
     # The latest release is the most recent non-prerelease, non-draft release, sorted by
     # the created_at attribute.
 
