@@ -50,7 +50,7 @@ def update_all(token_file=None) -> int:
 
     console.print("Update? [Y/n] ", end="")
     choice = console.input().lower()
-    if choice in ["n", "no"]:
+    if choice in {"n", "no"}:
         console.print("Abort.")
         return 1
 

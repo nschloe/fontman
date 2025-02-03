@@ -1,0 +1,18 @@
+envlist = [ "py3" ]
+
+[env_run_base]
+package = "wheel"
+# uv_resolution = "{env_name}"
+dependency_groups = [ "test" ]
+commands = [
+  [
+    "pytest",
+    { "replace" = "posargs", "extend" = true },
+    # "--codeblocks",
+    # "--cov=stonefish_license_manager",
+    # "--cov-report",
+    # "html",
+    # "--cov-report",
+    # "term"
+  ],
+]

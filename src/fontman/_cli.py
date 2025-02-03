@@ -1,6 +1,6 @@
 import argparse
 from importlib import metadata
-from sys import version_info
+from sys import version_info as vi
 
 from ._install import install_fonts
 from ._list import list_fonts
@@ -22,7 +22,7 @@ def cli(argv=None):
         help="display version information",
     )
 
-    subparsers = parser.add_subparsers(title="subcommands")
+    subparsers = parser.add_subparsers(title="subcommands", required=True)
 
     parser_install = subparsers.add_parser(
         "install", help="Install new fonts", aliases=["i", "inst", "add"]
@@ -33,7 +33,7 @@ def cli(argv=None):
     )
 
     parser_list = subparsers.add_parser(
-        "list", help="List installed fonts", aliases=["l"]
+        "list", help="List installed fonts", aliases=["ls"]
     )
     parser_list.set_defaults(func=lambda _: list_fonts())
 
@@ -104,11 +104,11 @@ def get_version_text():
     except Exception:
         version = "unknown"
 
-    python_version = f"{version_info.major}.{version_info.minor}.{version_info.micro}"
+    python_version = f"{vi.major}.{vi.minor}.{vi.micro}"
     version_text = "\n".join(
         [
             f"fontman {version} [Python {python_version}]",
-            "Copyright (c) 2021 Nico Schlömer <nico.schloemer@gmail.com>",
+            "Copyright (c) 2021-present Nico Schlömer <nico.schloemer@gmail.com>",
         ]
     )
     return version_text
