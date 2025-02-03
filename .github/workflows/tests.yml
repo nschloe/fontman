@@ -34,7 +34,7 @@ jobs:
       - name: Test with tox
         run: |
           pip install tox
-          tox -- --cov fontman --cov-report xml --cov-report term
+          tox
 
       - name: Submit to codecov
         uses: codecov/codecov-action@v5
